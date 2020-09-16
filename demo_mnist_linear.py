@@ -15,7 +15,7 @@ import helper
 import torch
 from os import path
 
-
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
 
 # Setting experimental parameters
 experiment_parameters = {}

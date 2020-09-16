@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.misc as scm
+from PIL import Image
 import torch
 from torch.utils.data import TensorDataset
 import vae
@@ -54,7 +54,7 @@ def readvid_gr(filename,  scale=1.0):
     vid = imageio.get_reader(filename,  'ffmpeg')
 
     for image in vid.iter_data():
-        arr = np.float32(scm.imresize(np.asarray(image), scale))/255
+        arr = np.array(Image.fromarray(image).resize(scale))/255
         grarr = 0.299*arr[:, :, 0] + 0.587*arr[:, :, 1] + 0.114*arr[:, :, 2]
         V.append(np.expand_dims(grarr, 0))
     fr = vid.get_meta_data()['fps']
@@ -62,7 +62,7 @@ def readvid_gr(filename,  scale=1.0):
     return [np.concatenate(V), fr]
 
 
-def readvid(filename,  scale=1.0):
+def readvid(filename,  scale=None):
     '''
     this function returns a numpy array containing the video frames of the
     provided avi file converted scaled by the indicated factor.
@@ -73,7 +73,10 @@ def readvid(filename,  scale=1.0):
     vid = imageio.get_reader(filename,  'ffmpeg')
 
     for image in vid.iter_data():
-        arr = np.float32(scm.imresize(np.asarray(image), scale))/255
+        if scale is None:
+            arr = image/255
+        else:
+            arr = np.array(Image.fromarray(image).resize(scale))/255
         rgbarr = np.zeros((1, 3, arr.shape[0], arr.shape[1]))
         rgbarr[0, 0] = arr[:, :, 0].copy()
         rgbarr[0, 1] = arr[:, :, 1].copy()
@@ -84,7 +87,7 @@ def readvid(filename,  scale=1.0):
     return [np.concatenate(V), fr]
 
 
-def writevid(V, filename, fps=15, scale=1.0):
+def writevid(V, filename, fps=15, scale=None):
     vid = imageio.get_writer(filename, 'ffmpeg', fps=fps)
     for v in V:
         if len(v.shape) > 2:
@@ -92,7 +95,11 @@ def writevid(V, filename, fps=15, scale=1.0):
             rgbv[:, :, 0] = v[0]
             rgbv[:, :, 1] = v[1]
             rgbv[:, :, 2] = v[2]
-            vid.append_data(scm.imresize(np.uint8(rgbv*255.0), scale))
+            if scale is None:
+                vid.append_data(np.uint8(rgbv*255.0))
+            else:
+                vid.append_data(np.array(Image.fromarray(np.uint8(rgbv*255.0)
+                                                         ).resize(scale)))
         else:
             vid.append_data(np.uint8(v*255.0))
     vid.close()
@@ -165,8 +172,8 @@ def run_experiment_linear(data, file_prefix, p):
     h_prev = np.dot(y_prev-y_mu, C)
     h_next = np.dot(y_next-y_mu, C)
 
-    A = np.dot(np.dot(h_next.T, h_prev), np.linalg.inv(np.dot(h_prev.T,
-               h_prev)))
+    Ac = np.linalg.lstsq(h_prev, h_next)
+    A = Ac[0].T
     Ua, Sa, VaT = np.linalg.svd(A)
     Sa = np.where(Sa > 1.0, 1.0, Sa)
     A = np.dot(Ua*Sa, VaT)

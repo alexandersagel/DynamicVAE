@@ -18,7 +18,7 @@ import datetime
 from torchvision import transforms
 
 
-if not(path.exists('./data/stgconv_data')):
+if not(path.exists('./data/cows')):
     print('Downloading STGConvNet_code.zip...')
     url = 'http://www.stat.ucla.edu/~jxie/STGConvNet/STGConvNet_file/code/STGConvNet_code.zip'
     urllib.request.urlretrieve(url, './data/STGConvNet_code.zip')
