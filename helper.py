@@ -162,8 +162,8 @@ def run_experiment_linear(data, file_prefix, p):
 
     C = VcT[:p['latent_dim'], :].T
 
-    h_prev = np.dot(y_prev, C)
-    h_next = np.dot(y_next, C)
+    h_prev = np.dot(y_prev-y_mu, C)
+    h_next = np.dot(y_next-y_mu, C)
 
     A = np.dot(np.dot(h_next.T, h_prev), np.linalg.inv(np.dot(h_prev.T,
                h_prev)))
