@@ -140,12 +140,8 @@ def run_experiment(arg1, arg2, arg3, arg4=None):
             ret = run_experiment_dvae(arg1, arg2, arg3)
         elif arg3['network_type'] == 'Linear':
             ret = run_experiment_linear(arg1, arg2, arg3)
-        if arg3['network_type'] == 'L1':
-            ret = run_experiment_l1(arg1, arg2, arg3)
     else:
-        if arg4['network_type'] == 'VGG':
-            ret = run_experiment_vgg(arg1, arg2, arg3, arg4)
-        elif arg4['incomplete'] == 'incomplete':
+        if arg4['incomplete'] == 'incomplete':
             ret = run_experiment_incomplete(arg1, arg2, arg3, arg4)
         else:
             print('Network type not recognized!')
@@ -199,7 +195,7 @@ def run_experiment_vae(data, file_prefix, p):
     '''
     
     y = torch.zeros(data.size(0)).float()
-    dataset = TensorDataset(data[1:, [0], :, :], y)
+    dataset = TensorDataset(data[1:, [0], :, :], y[1:])
     data_loader = torch.utils.data.DataLoader(dataset=dataset,
                                               batch_size=1,
                                               shuffle=True)
